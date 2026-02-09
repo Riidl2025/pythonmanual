@@ -6,13 +6,8 @@ from hashlib import md5
 from pythonmanual.resources import startup_table
 from urllib.parse import quote_plus
 from dotenv import dotenv_values
+from resource import calendar_invite,api_root
 
-config = dotenv_values(".env")
-
-
-
-api_root =  config.get("BASE_API_ENDPOINT")
-calendar_invite = config.get("CALENDAR_INVITE")
 
 
 
@@ -361,7 +356,3 @@ def sendMailToTeam(startupName : str):
 
 
 
-
-  
-if(__name__ == "__main__"):
-  sendMailToTeam("youtube")

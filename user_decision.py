@@ -1,4 +1,3 @@
-import boto3
 from hashlib import md5
 from pythonmanual.resources import member_log_table,approve_reject_table,startup_table,team_email_list
 from pythonmanual.mail_mod import sendFinalDecisionMailToStartup

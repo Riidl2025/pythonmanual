@@ -12,11 +12,7 @@ bucket = config.get("PITCHDECK_S3_BUCKET")
 
 
 app = FastAPI()
-origins = [
-  "http://localhost:8000/form.html",
-  "http://localhost:8000"
-           ]
-
+origins = [] #Add requied origin headers
 app.add_middleware(
       CORSMiddleware,
       allow_origins=origins,
