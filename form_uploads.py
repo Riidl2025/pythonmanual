@@ -1,11 +1,10 @@
 from pydantic import BaseModel
-import boto3
 from botocore.exceptions import ClientError
-import hashlib
-import datetime
-from pythonmanual.mail_mod import teamEmailList
+from  hashlib import md5
+from datetime import datetime
+from mail_mod import teamEmailList
 from urllib.parse import quote_plus,unquote
-from pythonmanual.resources import mem_dec_table,app_rej_table,startup_info_table
+from resources import member_log_table,approve_reject_table,startup_table
 from dotenv import dotenv_values
 
 
@@ -16,8 +15,8 @@ class Form(BaseModel):
   description : str
   startupStage : str
   hearAbout:str
-  isRegisteredCompany : bool
-  fromSomaiya : bool
+  isRegisteredCompany : str
+  fromSomaiya : str
   companyEmail: str
   companyMobile :str
   industries:str
@@ -32,8 +31,7 @@ config = dotenv_values(".env")
 bucket = config.get("PITCHDECK_S3_BUCKET")
 
 def fillInitialUserLog(startUpName : str):
-  tableName = mem_dec_table
-  table = boto3.resource("dynamodb").Table(tableName)
+  table = member_log_table
   try:
     table.put_item(
       Item = {
@@ -41,7 +39,8 @@ def fillInitialUserLog(startUpName : str):
         "members" : initalUserLogMap
       }
     )
-  except ClientError:
+  except ClientError as err:
+    print(err)
     return False
 
   return True
@@ -50,8 +49,8 @@ def fillInitialUserLog(startUpName : str):
 
 
 def fillInitialStartupLog(startUpName : str):
-  tableName = app_rej_table
-  table = boto3.resource("dynamodb").Table(tableName)
+
+  table = approve_reject_table
   try : 
     table.put_item(
       Item = {
@@ -61,27 +60,29 @@ def fillInitialStartupLog(startUpName : str):
         "status" : "pending"
       }
     )
-  except ClientError:
+  except ClientError as err:
+    print(err)
     return False 
 
   return True
 
 def UploadStartupInfo(form: Form,fileName : str):
   startUp_dic = form.model_dump()
-  startUp_dic["id"] = hashlib.md5(form.startupName.encode()).hexdigest()
+  startUp_dic["id"] = md5(form.startupName.encode()).hexdigest()
   startUp_dic["pitchDeckUrl"] = unquote(quote_plus(f"https://{bucket}.s3.amazonaws.com/{form.startupName}/{fileName}"))
-  now = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
+  now = datetime.now().strftime("%d-%m-%y %H:%M:%S")
   startUp_dic["createdAt"] = now
   startUp_dic["updatedAt"] = now
   startUp_dic["status"] = "submitted"
-  table = boto3.resource("dynamodb").Table(startup_info_table)
+  table = startup_table
   try :
     table.put_item(
     Item = startUp_dic
   )
     return True
     
-  except ClientError:
+  except ClientError as err:
+    print(err)
     return False
   
 

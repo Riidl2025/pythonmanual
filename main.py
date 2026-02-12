@@ -1,11 +1,10 @@
 from fastapi import FastAPI,Response,status
-import boto3
-import form_uploads
-import pythonmanual.user_decision as user_decision
-import pythonmanual.mail_mod as mail_mod
+from form_uploads import fillInitialUserLog,fillInitialStartupLog,UploadStartupInfo,Form
+from user_decision import updateTables
+from mail_mod import sendMailToTeam,sendRegistrationMailToStartup
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
-
+from resources import s3_client
 
 config = dotenv_values(".env")
 bucket = config.get("PITCHDECK_S3_BUCKET")
@@ -30,8 +29,7 @@ def index():
 
 @app.get("/get_presigned_url")
 def S3Uploads(startUpName : str):
-  s3 = boto3.client('s3')
-  out = s3.generate_presigned_post(
+  out = s3_client.generate_presigned_post(
     bucket,
     Key = f"{startUpName}/${{filename}}",
   )
@@ -39,20 +37,20 @@ def S3Uploads(startUpName : str):
 
 
 @app.post("/upload_startup_info")
-def UplaodStartupInfo(form: form_uploads.Form,fileName : str):
+def UplaodStartupInfo(form: Form,fileName : str):
     
-    form_uploads.UploadStartupInfo(form= form,fileName = fileName)
-    form_uploads.fillInitialStartupLog(form.startupName)
-    form_uploads.fillInitialUserLog(form.startupName)
-    mail_mod.sendMailToTeam(form.startupName)
-    mail_mod.sendRegistrationMailToStartup(form.companyEmail)
+    UploadStartupInfo(form = form,fileName = fileName)
+    fillInitialStartupLog(form.startupName)
+    fillInitialUserLog(form.startupName)
+    sendMailToTeam(form.startupName)
+    sendRegistrationMailToStartup(form.companyEmail)
      
     return form
 
 
 @app.get("/user_decision")
 def user_decision_handler(memberEmail: str,startupName : str,userHasApproved : bool , response : Response):
-  code = user_decision.updateTables(startupName,memberEmail,userHasApproved)
+  code = updateTables(startupName,memberEmail,userHasApproved)
   if(code == 200):
     response.status_code = status.HTTP_200_OK
 

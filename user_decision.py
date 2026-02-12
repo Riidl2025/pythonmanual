@@ -1,6 +1,6 @@
 from hashlib import md5
-from pythonmanual.resources import member_log_table,approve_reject_table,startup_table,team_email_list
-from pythonmanual.mail_mod import sendFinalDecisionMailToStartup
+from resources import member_log_table,approve_reject_table,startup_table,team_email_list
+from mail_mod import sendFinalDecisionMailToStartup
 
 THRESHOLD_NUMBER = 3   # no of votes required for the final_mail to be sent to the startup
 
@@ -51,6 +51,7 @@ def updateTables(startupName : str , userEmail : str,userHasApproved : bool):
     num_approvals = item["Item"]["approvals"] 
     num_rejections = item["Item"]["rejections"] 
     if((num_approvals >= THRESHOLD_NUMBER) or (num_rejections >= THRESHOLD_NUMBER)) and (item["Item"]["status"] == "pending"):
+      
       startup_id = md5(startupName.encode()).hexdigest()
       startup_email = startup_table.get_item(Key = {"id" : startup_id})["Item"]["companyEmail"]
       status = ""

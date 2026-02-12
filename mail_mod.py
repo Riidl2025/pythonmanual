@@ -1,24 +1,13 @@
 from smtplib import SMTP
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import csv
 from hashlib import md5
-from pythonmanual.resources import startup_table
+from resources import startup_table
 from urllib.parse import quote_plus
 from dotenv import dotenv_values
-from resource import calendar_invite,api_root
+from resources import calendar_invite,api_root,team_email_list
 
 
-
-
-def read_single_column_from_csv(file):
-  data_list = []
-  with open(file, mode='r', newline='', encoding='utf-8') as file:
-    reader = csv.reader(file)
-    for row in reader:
-      if row:
-        data_list.append(row[0])
-  return data_list
 
 
 class Mailer:
@@ -338,7 +327,7 @@ def sendFinalDecisionMailToStartup(startupEmail : str,isAccepted : bool):
 
 
 
-teamEmailList = read_single_column_from_csv("userMails.csv")
+teamEmailList = team_email_list
 
 def sendMailToTeam(startupName : str):
   m = Mailer()
